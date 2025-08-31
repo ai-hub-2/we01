@@ -55,6 +55,16 @@ export async function middleware(request: NextRequest) {
     return response;
   }
 
+  // Forward selected API base from cookie to API routes via header
+  if (pathname.startsWith("/api/")) {
+    const apiBase = request.cookies.get("api_base")?.value;
+    const res = NextResponse.next();
+    if (apiBase) {
+      res.headers.set("x-api-base", apiBase);
+    }
+    return res;
+  }
+
   return NextResponse.next();
 }
 

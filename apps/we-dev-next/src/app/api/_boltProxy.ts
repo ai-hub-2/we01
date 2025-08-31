@@ -18,10 +18,14 @@ function getCorsHeaders(origin: string | null): HeadersInit {
 }
 
 export async function proxyToBolt(request: Request): Promise<Response> {
-  const base = process.env.BOLT_API_BASE;
-  if (!base) {
+  const defaultBase = process.env.BOLT_API_BASE;
+  if (!defaultBase) {
     return new Response("Missing BOLT_API_BASE env", { status: 500 });
   }
+
+  const allowClientBase = (process.env.BOLT_ALLOW_CLIENT_BASE || "true").toLowerCase() === "true";
+  const headerBase = request.headers.get("x-api-base");
+  const base = allowClientBase && headerBase ? headerBase : defaultBase;
 
   const url = new URL(request.url);
   const origin = request.headers.get("origin");
@@ -51,6 +55,8 @@ export async function proxyToBolt(request: Request): Promise<Response> {
     if (k === "host" || k === "content-length") continue;
     // skip browser-specific fetch metadata
     if (k.startsWith("sec-fetch")) continue;
+    // do not forward x-api-base downstream
+    if (k === "x-api-base") continue;
     headers.set(key, value);
   }
 
