@@ -1,8 +1,12 @@
 name = "we-dev-pages"
 compatibility_date = "2025-08-31"
 
-# Next.js on Pages auto-detects, but we specify for local dev
-pages_build_output_dir = ".next"
+# Build the Next app with Next on Pages, and deploy the generated output
+pages_build_output_dir = "apps/we-dev-next/.vercel/output/static"
+
+[build]
+command = "cd apps/we-dev-next && corepack enable && pnpm --version || npm i -g pnpm && pnpm install --frozen-lockfile && npx @cloudflare/next-on-pages@1"
+cwd = "."
 
 [observability]
 enabled = true
