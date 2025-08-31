@@ -60,12 +60,18 @@ export async function proxyToBolt(request: Request): Promise<Response> {
     headers.set(key, value);
   }
 
-  // Authorization: prefer forwarded header if allowed, otherwise inject env key
+  // Authorization: prefer forwarded header/cookie-based if allowed, otherwise inject env key
   const incomingAuth = request.headers.get("authorization");
   if (!forwardAuth || !incomingAuth) {
     if (staticKey) {
       headers.set("authorization", `${scheme} ${staticKey}`.trim());
     }
+  }
+
+  // Forward model hint if present to downstream (some providers honor it via header)
+  const model = request.headers.get("x-api-model");
+  if (model && !headers.has("x-api-model")) {
+    headers.set("x-api-model", model);
   }
 
   const init: RequestInit = { method, headers };

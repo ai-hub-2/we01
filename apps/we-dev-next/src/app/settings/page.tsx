@@ -6,6 +6,7 @@ type ProviderOption = {
   label: string;
   value: string;
   bases: string[];
+  models: string[];
 };
 
 const PROVIDERS: ProviderOption[] = [
@@ -13,16 +14,29 @@ const PROVIDERS: ProviderOption[] = [
     label: "bolt.diy",
     value: "bolt",
     bases: ["https://api.bolt.diy/v1/"],
+    models: [
+      "gpt-4o-mini",
+      "deepseek-reasoner",
+      "deepseek-chat",
+      "claude-3-5-sonnet-20240620",
+    ],
   },
   {
     label: "OpenAI-compatible",
     value: "openai",
     bases: ["https://api.openai.com/v1/", "https://api.deepseek.com/v1/"],
+    models: [
+      "gpt-4o-mini",
+      "gpt-4o",
+      "gpt-4.1-mini",
+      "gpt-3.5-turbo",
+    ],
   },
   {
     label: "Custom",
     value: "custom",
     bases: [""],
+    models: [""],
   },
 ];
 
@@ -43,12 +57,21 @@ function setCookie(name: string, value: string, days = 365) {
 export default function SettingsPage() {
   const [provider, setProvider] = useState<string>("bolt");
   const [apiBase, setApiBase] = useState<string>("");
+  const [model, setModel] = useState<string>("");
+  const [apiKey, setApiKey] = useState<string>("");
+  const [scheme, setScheme] = useState<string>("Bearer");
 
   useEffect(() => {
     const p = getCookie("api_provider");
     const b = getCookie("api_base");
+    const m = getCookie("api_model");
+    const k = getCookie("api_key");
+    const s = getCookie("api_auth_scheme");
     if (p) setProvider(p);
     if (b) setApiBase(b);
+    if (m) setModel(m);
+    if (k) setApiKey(k);
+    if (s) setScheme(s);
     if (!b && !p) {
       // default to bolt
       setApiBase("https://api.bolt.diy/v1/");
@@ -59,6 +82,11 @@ export default function SettingsPage() {
   const baseOptions = useMemo(() => {
     const match = providerOptions.find((x) => x.value === provider);
     return match?.bases ?? [""];
+  }, [provider, providerOptions]);
+
+  const modelOptions = useMemo(() => {
+    const match = providerOptions.find((x) => x.value === provider);
+    return match?.models ?? [""];
   }, [provider, providerOptions]);
 
   function handleProviderChange(value: string) {
@@ -77,6 +105,21 @@ export default function SettingsPage() {
     setCookie("api_base", value);
   }
 
+  function handleModelChange(value: string) {
+    setModel(value);
+    setCookie("api_model", value);
+  }
+
+  function handleApiKeyChange(value: string) {
+    setApiKey(value);
+    setCookie("api_key", value);
+  }
+
+  function handleSchemeChange(value: string) {
+    setScheme(value);
+    setCookie("api_auth_scheme", value);
+  }
+
   return (
     <div style={{ maxWidth: 600, margin: "40px auto", padding: 16 }}>
       <h1 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>
@@ -93,6 +136,21 @@ export default function SettingsPage() {
             {providerOptions.map((opt) => (
               <option key={opt.value} value={opt.value}>
                 {opt.label}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label style={{ display: "grid", gap: 6 }}>
+          <span>Model</span>
+          <select
+            value={model}
+            onChange={(e) => handleModelChange(e.target.value)}
+            style={{ padding: 8, borderRadius: 6, border: "1px solid #ccc" }}
+          >
+            {modelOptions.map((m) => (
+              <option key={m} value={m}>
+                {m || "Custom"}
               </option>
             ))}
           </select>
@@ -129,6 +187,36 @@ export default function SettingsPage() {
             style={{ padding: 8, borderRadius: 6, border: "1px solid #ccc" }}
           />
         )}
+
+        <div style={{ display: "grid", gap: 6 }}>
+          <span>API Key</span>
+          <input
+            type="password"
+            placeholder="sk-..."
+            value={apiKey}
+            onChange={(e) => handleApiKeyChange(e.target.value)}
+            style={{ padding: 8, borderRadius: 6, border: "1px solid #ccc" }}
+          />
+        </div>
+
+        <label style={{ display: "grid", gap: 6 }}>
+          <span>Auth Scheme</span>
+          <select
+            value={scheme}
+            onChange={(e) => handleSchemeChange(e.target.value)}
+            style={{ padding: 8, borderRadius: 6, border: "1px solid #ccc" }}
+          >
+            {[
+              "Bearer",
+              "Token",
+              "Basic",
+            ].map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
+        </label>
 
         <div style={{ fontSize: 12, color: "#666" }}>
           Changes are saved to cookies and used by the proxy for /api/* requests.
