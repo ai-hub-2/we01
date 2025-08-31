@@ -61,7 +61,7 @@ export default function SettingsPage() {
     return match?.bases ?? [""];
   }, [provider, providerOptions]);
 
-  function handleProviderChange(value: string)() {
+  function handleProviderChange(value: string) {
     setProvider(value);
     setCookie("api_provider", value);
     const match = PROVIDERS.find((x) => x.value === value);
