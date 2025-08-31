@@ -1,0 +1,8 @@
+# Force HTTPS and apex
+http://*example.com/* https://example.com/:splat 301!
+https://www.example.com/* https://example.com/:splat 301!
+
+# Next.js App Router fallback for client-side routes (kept minimal; Next handles most SSR)
+# Uncomment if serving a static export or SPA-only build
+# /* /index.html 200
+

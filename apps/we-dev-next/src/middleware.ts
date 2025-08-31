@@ -65,5 +65,5 @@ export const config = {
     "/api/:path*",
     "/wedev/:path*",
   ],
-  runtime: "nodejs",
+  runtime: "experimental-edge",
 }

@@ -1,0 +1,13 @@
+name = "we-dev-pages"
+compatibility_date = "2025-08-31"
+
+# Next.js on Pages auto-detects, but we specify for local dev
+pages_build_output_dir = ".next"
+
+[observability]
+enabled = true
+
+# Example: place non-secret defaults here; set real secrets in dashboard
+[vars]
+NEXT_PUBLIC_APP_NAME = "we-dev"
+
