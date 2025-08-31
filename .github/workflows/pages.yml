@@ -1,0 +1,49 @@
+name: Deploy Next.js to Cloudflare Pages
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v4
+        with:
+          version: 8
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        working-directory: apps/we-dev-next
+        run: pnpm install --frozen-lockfile
+
+      - name: Build with Next on Pages
+        working-directory: apps/we-dev-next
+        env:
+          NODE_ENV: production
+          BOLT_API_BASE: ${{ secrets.BOLT_API_BASE }}
+          BOLT_API_KEY: ${{ secrets.BOLT_API_KEY }}
+          BOLT_AUTH_SCHEME: ${{ secrets.BOLT_AUTH_SCHEME }}
+          BOLT_FORWARD_AUTH: ${{ secrets.BOLT_FORWARD_AUTH }}
+          BOLT_API_PREFIX: ${{ secrets.BOLT_API_PREFIX }}
+        run: npx @cloudflare/next-on-pages@1
+
+      - name: Deploy to Cloudflare Pages (SSR)
+        working-directory: apps/we-dev-next
+        env:
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+        run: npx wrangler pages deploy .vercel/output/static --project-name we-dev-pages --account-id ${{ secrets.CF_ACCOUNT_ID }} --branch ${{ github.ref_name }}
