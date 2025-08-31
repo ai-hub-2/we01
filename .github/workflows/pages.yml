@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - cursor/migrate-web-project-to-cloudflare-pages-bb62
   workflow_dispatch:
 
 jobs:
